@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NardBotCore
 {
-    public struct Cell
+    public class Cell
     {
         public Cell(int FourthNumber, int CellNumber)
         {
