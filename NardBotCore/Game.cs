@@ -18,11 +18,11 @@ namespace NardBotCore
 
             var Whitecells = Cells.First(c => c.FourthNumber == (WhiteStarted ? 0 : 3) && c.CellNumber == 0);
             Whitecells.ChipCount = 15;
-            Whitecells.IsWhiteСhip = WhiteStarted;
+            Whitecells.Identity = CellIIdentity.White;
 
             var BlackCells = Cells.First(c => c.FourthNumber == (WhiteStarted ? 3 : 0) && c.CellNumber == 0);
             BlackCells.ChipCount = 15;
-            BlackCells.IsWhiteСhip = !WhiteStarted;
+            BlackCells.Identity = CellIIdentity.Black;
         }
         private bool WhiteStarted;
         public List<Cell> Cells;
