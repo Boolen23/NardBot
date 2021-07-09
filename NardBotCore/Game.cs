@@ -16,15 +16,45 @@ namespace NardBotCore
                 for (int CellCounter = 0; CellCounter < 6; CellCounter++)
                     Cells.Add(new Cell(FourthCounter, CellCounter));
 
-            var Whitecells = Cells.First(c => c.FourthNumber == (WhiteStarted ? 0 : 3) && c.CellNumber == 0);
+            var Whitecells = this[WhiteStarted ? 0 : 2, 0];
             Whitecells.ChipCount = 15;
-            Whitecells.Identity = CellIIdentity.White;
+            Whitecells.Identity = Identity.White;
 
-            var BlackCells = Cells.First(c => c.FourthNumber == (WhiteStarted ? 3 : 0) && c.CellNumber == 0);
+            var BlackCells = this[WhiteStarted ? 2 : 0, 0];
             BlackCells.ChipCount = 15;
-            BlackCells.Identity = CellIIdentity.Black;
+            BlackCells.Identity = Identity.Black;
+
+            InfoList = new List<string>();
         }
         private bool WhiteStarted;
         public List<Cell> Cells;
+        public Cell this[int FourthNumber, int CellNumber] => Cells.FirstOrDefault(c => c.FourthNumber == FourthNumber && c.CellNumber == CellNumber);
+        public List<string> InfoList;
+        public event EventHandler<MoveEventArgs> WhiteMove;
+        public event EventHandler<MoveEventArgs> BlackMove;
+        public void AddStep(int SrcFourth, int SrcCellNumber, int cnt)
+        {
+            Cell c = this[SrcFourth, SrcCellNumber];
+            if (c.ChipCount < 1)
+            {
+                InfoList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: В ячейке {SrcFourth}-{SrcCellNumber} нет фишек!");
+                return;
+            }
+            int ResFourth = c.CellNumber + cnt >= 6 ? c.FourthNumber + 1 : c.FourthNumber;
+            if (ResFourth > 3) ResFourth = 0;
+            int ResCellNumber = ResFourth != c.FourthNumber ? (c.CellNumber + cnt - 6) : (cnt + c.CellNumber);
+            Cell resCell = this[ResFourth, ResCellNumber];
+            if(resCell.Identity != c.Identity && resCell.Identity != Identity.Free)
+            {
+                InfoList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ячейка {ResFourth}-{ResCellNumber} занята противником!");
+                return;
+            }
+            resCell.ChipCount++;
+            resCell.Identity = c.Identity;
+            c.ChipCount--;
+
+            InfoList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ok!");
+            return;
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using NardBotCore;
 using System;
+using System.Linq;
 
 namespace NardBot
 {
@@ -8,9 +9,20 @@ namespace NardBot
         static void Main(string[] args)
         {
             game = new Game(false);
-            DrawGame();
+            while (true)
+            {
+                DrawGame();
+                Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
+                Console.WriteLine("Команда: четветь ячейка кол-во очков");
+                ExecuteCommand(Console.ReadLine());
+            }
             Console.ReadLine();
-
+             
+        }
+        static void ExecuteCommand(string command)
+        {
+            int[] cmd = command.Split().Select(i => i.Trim()).Select(int.Parse).ToArray();
+            game.AddStep(cmd[0], cmd[1], cmd[2]);
         }
         static Game game;
         static void DrawGame()
@@ -18,47 +30,51 @@ namespace NardBot
             Console.Clear();
             foreach (Cell cl in game.Cells)
                 DrawCell(cl);
+            DrawHistory();
+        }
+        static void DrawHistory()
+        {
+            for (int i = 0; i < game.InfoList.Count; i++)
+            {
+                Console.SetCursorPosition(65, i);
+                Console.Write($"| {game.InfoList[i]}");
+            }
         }
         static void DrawCell(Cell c)
         {
-            bool IsSecondLine = c.FourthNumber > 1;
-            var t = c.FourthNumber * 24 + c.CellNumber * 4;
-            //int EndPos = 48 - c.FourthNumber * 24 - c.CellNumber * 4;
-            int Pos = c.FourthNumber == 0 ? 58 - c.CellNumber * 4 :
-                            c.FourthNumber == 1 ? 28 - c.CellNumber * 4 :
-                            c.FourthNumber == 2 ? 4 + c.CellNumber * 4 :
-                            c.FourthNumber == 3 ? 34 + c.CellNumber * 4 : 0;
-            string ChipCountText = c.ChipCount < 10 ? $"0{c.ChipCount}" : c.ChipCount.ToString();
-            DrawCellFrom(c, IsSecondLine, Pos, ChipCountText);
+            int Pos = c.FourthNumber switch
+            {
+                0 => 58 - c.CellNumber * 4,
+                1 => 28 - c.CellNumber * 4,
+                2 => 4 + c.CellNumber * 4,
+                3 => 34 + c.CellNumber * 4
+            };
+
+            Console.SetCursorPosition(c.PositionByStep(0), c.TopPadding());
+            Console.Write("|");
+            Console.SetCursorPosition(c.PositionByStep(c.FourthNumber < 2 ? 3 : 1), c.TopPadding());
+            Console.Write(c.InnerText());
+            Console.SetCursorPosition(c.PositionByStep(4), c.TopPadding());
+            Console.Write("|");
+
         }
-        static void DrawCellFrom(Cell c, bool IsSecondLine, int Pos, string ChipCountText)
+    }
+    public static class Helper
+    {
+        public static int TopPadding(this Cell c) => c.FourthNumber < 2 ? 0 : 3;
+        public static int PositionByStep(this Cell c, int step)
         {
-            if (c.FourthNumber < 2)
+            int pos = c.FourthNumber switch
             {
-                Console.SetCursorPosition(Pos, 0);
-                Console.Write("|");
-                Console.SetCursorPosition(Pos - 1 < 0 ? 0 : Pos - 1, 0);
-                if (c.Identity == CellIIdentity.Free) Console.Write("н");
-                if (c.Identity == CellIIdentity.White) Console.Write("б");
-                if (c.Identity == CellIIdentity.Black) Console.Write("ч");
-                Console.SetCursorPosition(Pos - 3 < 0 ? 0 : Pos - 3, 0);
-                Console.Write(ChipCountText);
-                Console.SetCursorPosition(Pos - 4 < 0 ? 0 : Pos - 4, 0);
-                Console.Write("|");
-            }
-            else
-            {
-                Console.SetCursorPosition(Pos, 2);
-                Console.Write("|");
-                Console.SetCursorPosition(Pos + 1, 2);
-                Console.Write(ChipCountText);
-                Console.SetCursorPosition(Pos + 3, 2);
-                if (c.Identity == CellIIdentity.Free) Console.Write("н");
-                if (c.Identity == CellIIdentity.White) Console.Write("б");
-                if (c.Identity == CellIIdentity.Black) Console.Write("ч");
-                Console.SetCursorPosition(Pos + 4, 2);
-                Console.Write("|");
-            }
+                0 => 58 - c.CellNumber * 4,
+                1 => 28 - c.CellNumber * 4,
+                2 => 4 + c.CellNumber * 4,
+                3 => 34 + c.CellNumber * 4,
+            };
+            return c.FourthNumber < 2 ? pos - step : pos + step;
         }
+        public static string InnerText(this Cell c) => string.Format("{0}{1}", (c.ChipCount < 10 ? $"0{c.ChipCount}" : c.ChipCount.ToString()),
+               (c.Identity switch { Identity.Free => "н", Identity.White => "б", Identity.Black => "ч" }));
+
     }
 }

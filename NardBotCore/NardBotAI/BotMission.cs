@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NardBotCore
+namespace NardBotCore.NardBotAI
 {
-    public enum CellIIdentity
+    public enum BotMission
     {
-        Free = 0,
-        White = 1,
-        Black = 2
+        FillHome = 0,
+        Aggressive = 1,
+        Passive = 2
     }
 }
