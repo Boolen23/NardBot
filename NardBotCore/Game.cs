@@ -10,8 +10,15 @@ namespace NardBotCore
     {
         public Game(bool WhiteStarted)
         {
-            this.WhiteStarted = WhiteStarted;
+            rn = new Random();
             Cells = new List<Cell>();
+            HistoryList = new List<string>();
+            InfoList = new Queue<string>();
+        }
+        public void NewGame()
+        {
+            this.WhiteStarted = DrawLots();
+
             for (int FourthCounter = 0; FourthCounter < 4; FourthCounter++)
                 for (int CellCounter = 0; CellCounter < 6; CellCounter++)
                     Cells.Add(new Cell(FourthCounter, CellCounter));
@@ -23,38 +30,53 @@ namespace NardBotCore
             var BlackCells = this[WhiteStarted ? 2 : 0, 0];
             BlackCells.ChipCount = 15;
             BlackCells.Identity = Identity.Black;
-
-            InfoList = new List<string>();
         }
         private bool WhiteStarted;
         public List<Cell> Cells;
         public Cell this[int FourthNumber, int CellNumber] => Cells.FirstOrDefault(c => c.FourthNumber == FourthNumber && c.CellNumber == CellNumber);
-        public List<string> InfoList;
+        public List<string> HistoryList;
+        public Queue<string> InfoList;
         public event EventHandler<MoveEventArgs> WhiteMove;
         public event EventHandler<MoveEventArgs> BlackMove;
+        public static Random rn;
+        public int NextNumber => rn.Next(1, 7);
         public void AddStep(int SrcFourth, int SrcCellNumber, int cnt)
         {
             Cell c = this[SrcFourth, SrcCellNumber];
             if (c.ChipCount < 1)
             {
-                InfoList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: В ячейке {SrcFourth}-{SrcCellNumber} нет фишек!");
+                HistoryList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: В ячейке {SrcFourth}-{SrcCellNumber} нет фишек!");
                 return;
             }
             int ResFourth = c.CellNumber + cnt >= 6 ? c.FourthNumber + 1 : c.FourthNumber;
             if (ResFourth > 3) ResFourth = 0;
             int ResCellNumber = ResFourth != c.FourthNumber ? (c.CellNumber + cnt - 6) : (cnt + c.CellNumber);
             Cell resCell = this[ResFourth, ResCellNumber];
-            if(resCell.Identity != c.Identity && resCell.Identity != Identity.Free)
+            if (resCell.Identity != c.Identity && resCell.Identity != Identity.Free)
             {
-                InfoList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ячейка {ResFourth}-{ResCellNumber} занята противником!");
+                HistoryList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ячейка {ResFourth}-{ResCellNumber} занята противником!");
                 return;
             }
             resCell.ChipCount++;
             resCell.Identity = c.Identity;
             c.ChipCount--;
 
-            InfoList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ok!");
+            HistoryList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ok!");
             return;
         }
+        public bool DrawLots()
+        {
+            int WhiteNumber = 0;
+            int BlackNumber = 0;
+            do
+            {
+                WhiteNumber = NextNumber;
+                BlackNumber = NextNumber;
+            }
+            while (WhiteNumber == BlackNumber);
+            InfoList.Enqueue($"Белые: {WhiteNumber} Черные: {BlackNumber}  {(WhiteNumber >= BlackNumber ? "Белые ходят!" : "Черные ходят!")}");
+            return WhiteNumber >= BlackNumber;
+        }
+        public string GetInfo() => InfoList.Count == 0 ? null : InfoList.Dequeue();
     }
 }
