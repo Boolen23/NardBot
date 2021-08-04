@@ -6,27 +6,16 @@ using System.Threading.Tasks;
 
 namespace NardBotCore.NardBotAI
 {
-    public class AIBot
+    public class AIBot : GameClient
     {
-        public AIBot(Game game, Identity identity)
+        public AIBot(Game game, Identity identity) : base(game, identity)
         {
-            _game = game;
-            _identity = identity;
             Mission = BotMission.FillHome;
-
-            if(_identity == Identity.White)
-                _game.WhiteMove += game_AIMove;
-            else
-                _game.BlackMove += game_AIMove;
         }
-
-        private void game_AIMove(object sender, MoveEventArgs e)
-        {
-
-        }
-
-        private Game _game;
-        public Identity _identity; //close after debug
         public BotMission Mission; //close after debug
+        protected override void MoveStarted(object sender, MoveEventArgs e)
+        {
+            //base.MoveStarted(sender, e);
+        }
     }
 }
