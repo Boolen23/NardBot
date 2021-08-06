@@ -10,7 +10,6 @@ namespace NardBotCore
     {
         public GameClient(Game g, Identity identity)
         {
-            //MoveStarted += GameClient_MoveStarted;
             if (identity == Identity.White)
                 game.WhiteMove += MoveStarted;
             else
