@@ -8,6 +8,7 @@ namespace NardBot
     {
         static void Main(string[] args)
         {
+            var MyIdent = GetClientIdentity();
             game = new Game(false);
             dr = Drawer.ByGame(game);
             game.NewGame();
@@ -28,5 +29,23 @@ namespace NardBot
         }
         static Game game;
         static Drawer dr;
+        static GameClient gClient;
+        static Identity GetClientIdentity()
+        {
+            for (; ; )
+            {
+                Console.Write("Выберите цвет фишек (ч/б): ");
+                var input = Console.ReadKey().KeyChar;
+                if (input != 'ч' || input != 'б')
+                {
+                    Console.WriteLine("Выберите только Черные или Белые фишки!");
+                    continue;
+                }
+                else
+                {
+                    return input == 'ч' ? Identity.Black : Identity.White;
+                }
+            }
+        }
     }
 }
