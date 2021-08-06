@@ -18,9 +18,9 @@ namespace NardBotCore
             this.ClientIdentity = identity;
         }
         private Game game;
-        protected virtual void MoveStarted(object sender, MoveEventArgs e)
-        {
-        }
+        protected virtual void MoveStarted(object sender, MoveEventArgs e) => ClientMoveStarted?.Invoke(this, e);
+        
+        public event EventHandler<MoveEventArgs> ClientMoveStarted;
 
         public Identity ClientIdentity { get; private set; }
 

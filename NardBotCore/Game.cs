@@ -36,6 +36,8 @@ namespace NardBotCore
             var BlackCells = this[WhiteStarted ? 2 : 0, 0];
             BlackCells.ChipCount = 15;
             BlackCells.Identity = Identity.Black;
+
+            Step();
         } 
         private bool WhiteStarted;
         public List<Cell> Cells;

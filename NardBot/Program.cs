@@ -10,19 +10,23 @@ namespace NardBot
         {
             var MyIdent = GetClientIdentity();
             game = new Game(false);
+            gClient = new GameClient(game, MyIdent);
+            gClient.ClientMoveStarted += GClient_ClientMoveStarted;
             dr = Drawer.ByGame(game);
             game.NewGame();
-            while (true)
-            {
-                dr.Invalidate();
-                Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
-                Console.WriteLine("Команда: четветь ячейка кол-во очков");
-                ExecuteCommand(Console.ReadLine());
-            }
             Console.ReadLine();
              
         }
-        static void ExecuteCommand(string command)
+
+        private static void GClient_ClientMoveStarted(object sender, MoveEventArgs e)
+        {
+            dr.Invalidate();
+            Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
+            Console.WriteLine("Команда: четветь ячейка кол-во очков");
+            ExecuteCommand(Console.ReadLine(), e.Moves);
+        }
+
+        static void ExecuteCommand(string command, int[] moves)
         {
             int[] cmd = command.Split().Select(i => i.Trim()).Select(int.Parse).ToArray();
             game.AddStep(cmd[0], cmd[1], cmd[2]);
