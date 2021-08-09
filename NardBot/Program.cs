@@ -22,7 +22,7 @@ namespace NardBot
         {
             dr.Invalidate();
             Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
-            Console.WriteLine("Команда: четветь ячейка кол-во очков");
+            Console.WriteLine($"Доступные ходы: {string.Join(", ", e.Moves)}, Команда: четветь ячейка кол-во очков");
             ExecuteCommand(Console.ReadLine(), e.Moves);
         }
 
@@ -39,15 +39,15 @@ namespace NardBot
             for (; ; )
             {
                 Console.Write("Выберите цвет фишек (ч/б): ");
-                var input = Console.ReadKey().KeyChar;
-                if (input != 'ч' || input != 'б')
+                var input = Console.ReadKey().KeyChar.ToString();
+                if (input != "ч" && input != "б")
                 {
                     Console.WriteLine("Выберите только Черные или Белые фишки!");
                     continue;
                 }
                 else
                 {
-                    return input == 'ч' ? Identity.Black : Identity.White;
+                    return input == "ч" ? Identity.Black : Identity.White;
                 }
             }
         }

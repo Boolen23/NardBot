@@ -8,12 +8,13 @@ namespace NardBotCore
 {
     public class GameClient
     {
-        public GameClient(Game g, Identity identity)
+        public GameClient(Game game, Identity identity)
         {
+            this.game = game;
             if (identity == Identity.White)
-                game.WhiteMove += MoveStarted;
+                this.game.WhiteMove += MoveStarted;
             else
-                game.BlackMove += MoveStarted;
+                this.game.BlackMove += MoveStarted;
 
             this.ClientIdentity = identity;
         }
