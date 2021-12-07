@@ -8,12 +8,12 @@ namespace NardBotCore.NardBotAI
 {
     public class AIBot : GameClient
     {
-        public AIBot(Game game, Identity identity) : base(game, identity)
+        public AIBot(Identity identity) : base(identity)
         {
             Mission = BotMission.FillHome;
         }
         public BotMission Mission; //close after debug
-        protected override void MoveStarted(object sender, MoveEventArgs e)
+        public override void MoveStarted(object sender, MoveEventArgs e)
         {
             //base.MoveStarted(sender, e);
         }

@@ -14,16 +14,27 @@ namespace NardBotCore
             Cells = new List<Cell>();
             HistoryList = new List<string>();
             InfoList = new Queue<string>();
+
+            WhiteClient = new GameClient(Identity.White);
+            BlackClient = new GameClient(Identity.Black);
         }
+        private GameClient WhiteClient;
+        private GameClient BlackClient;
+
+        public GameClient GetClient(Identity identity) => identity == Identity.White ?  WhiteClient : BlackClient; 
+
         public void Step()
         {
-            if (CurrentStepIdentity == Identity.White) WhiteMove?.Invoke(this, new MoveEventArgs(GetMoveKit()));
-            else BlackMove?.Invoke(this, new MoveEventArgs(GetMoveKit()));
+            if (CurrentStepIdentity == Identity.White) WhiteClient.MoveStarted(WhiteClient, new MoveEventArgs(Move.Generate()));
+            else BlackClient.MoveStarted(BlackClient, new MoveEventArgs(Move.Generate()));
         }
         public Identity CurrentStepIdentity;
         public void NewGame()
         {
-            this.WhiteStarted = DrawLots();
+            string DrawLotsInfo = string.Empty; 
+            this.WhiteStarted = Move.DrawLots(out DrawLotsInfo);
+            InfoList.Enqueue(DrawLotsInfo); 
+
             CurrentStepIdentity = WhiteStarted ? Identity.White : Identity.Black;
             for (int FourthCounter = 0; FourthCounter < 4; FourthCounter++)
                 for (int CellCounter = 0; CellCounter < 6; CellCounter++)
@@ -44,17 +55,7 @@ namespace NardBotCore
         public Cell this[int FourthNumber, int CellNumber] => Cells.FirstOrDefault(c => c.FourthNumber == FourthNumber && c.CellNumber == CellNumber);
         public List<string> HistoryList;
         public Queue<string> InfoList;
-        public event EventHandler<MoveEventArgs> WhiteMove;
-        public event EventHandler<MoveEventArgs> BlackMove;
         public static Random rn;
-        public int NextNumber => rn.Next(1, 7);
-        public int[] GetMoveKit()
-        {
-            int firstNumber = NextNumber;
-            int secondNumber = NextNumber;
-            if (firstNumber == secondNumber) return new int[] { firstNumber, firstNumber, firstNumber, firstNumber };
-            else return new int[] { firstNumber, secondNumber };
-        }
         public void AddStep(int SrcFourth, int SrcCellNumber, int cnt)
         {
             Cell c = this[SrcFourth, SrcCellNumber];
@@ -78,19 +79,6 @@ namespace NardBotCore
 
             HistoryList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ok!");
             return;
-        }
-        public bool DrawLots()
-        {
-            int WhiteNumber = 0;
-            int BlackNumber = 0;
-            do
-            {
-                WhiteNumber = NextNumber;
-                BlackNumber = NextNumber;
-            }
-            while (WhiteNumber == BlackNumber);
-            InfoList.Enqueue($"Белые: {WhiteNumber} Черные: {BlackNumber}  {(WhiteNumber >= BlackNumber ? "Белые ходят!" : "Черные ходят!")}");
-            return WhiteNumber >= BlackNumber;
         }
         public string GetInfo() => InfoList.Count == 0 ? null : InfoList.Dequeue();
     }

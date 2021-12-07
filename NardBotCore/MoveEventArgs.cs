@@ -8,10 +8,10 @@ namespace NardBotCore
 {
     public class MoveEventArgs : EventArgs
     {
-        public MoveEventArgs(params int[] moves)
+        public MoveEventArgs(Move move)
         {
-            this.Moves = moves;
+            this.move = move;
         }
-        public int[] Moves;
+        public Move move;
     }
 }

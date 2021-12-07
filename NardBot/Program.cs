@@ -10,7 +10,7 @@ namespace NardBot
         {
             var MyIdent = GetClientIdentity();
             game = new Game(false);
-            gClient = new GameClient(game, MyIdent);
+            gClient = game.GetClient(MyIdent);
             gClient.ClientMoveStarted += GClient_ClientMoveStarted;
             dr = Drawer.ByGame(game);
             game.NewGame();
@@ -22,8 +22,8 @@ namespace NardBot
         {
             dr.Invalidate();
             Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
-            Console.WriteLine($"Доступные ходы: {string.Join(", ", e.Moves)}, Команда: четветь ячейка кол-во очков");
-            ExecuteCommand(Console.ReadLine(), e.Moves);
+            Console.WriteLine($"Доступные ходы: {string.Join(", ", e.move.Moves)}, Команда: четветь ячейка кол-во очков");
+            ExecuteCommand(Console.ReadLine(), e.move.Moves);
         }
 
         static void ExecuteCommand(string command, int[] moves)
