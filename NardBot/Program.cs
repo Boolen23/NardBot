@@ -30,6 +30,7 @@ namespace NardBot
         {
             int[] cmd = command.Split().Select(i => i.Trim()).Select(int.Parse).ToArray();
             game.AddStep(cmd[0], cmd[1], cmd[2]);
+            dr.Invalidate();
         }
         static Game game;
         static Drawer dr;

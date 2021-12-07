@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NardBotCore
 {
-    public class Game
+    public class Game //TODO: сделать 2 game client внутри этого класса, из programm убрать
     {
         public Game(bool WhiteStarted)
         {
