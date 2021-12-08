@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NardBotCore.NardBotAI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,29 +7,48 @@ using System.Threading.Tasks;
 
 namespace NardBotCore
 {
-    public class Game //TODO: сделать 2 game client внутри этого класса, из programm убрать
+    public class Game 
     {
-        public Game(bool WhiteStarted)
+        public Game(bool WhiteStarted, Identity HumanIdentity)
         {
-            rn = new Random();
+            this.HumanIdentity = HumanIdentity;
+
             Cells = new List<Cell>();
             HistoryList = new List<string>();
             InfoList = new Queue<string>();
 
-            WhiteClient = new GameClient(Identity.White);
-            BlackClient = new GameClient(Identity.Black);
+            if (HumanIdentity == Identity.White)
+            {
+                HistoryList.Add("Вы играете за белых!");
+                WhiteClient = new GameClient(Identity.White, this);
+                BlackClient = new AIBot(Identity.Black, this);
+            }
+            else
+            {
+                HistoryList.Add("Вы играете за черных!");
+                WhiteClient = new AIBot(Identity.White, this);
+                BlackClient = new GameClient(Identity.Black, this);
+            }
         }
         private GameClient WhiteClient;
         private GameClient BlackClient;
+        private Identity HumanIdentity;
+        public Identity CurrentStepIdentity;
+        private Move CurrentMove;
 
-        public GameClient GetClient(Identity identity) => identity == Identity.White ?  WhiteClient : BlackClient; 
+        public GameClient GetHumanClient() => HumanIdentity == Identity.White ?  WhiteClient : BlackClient; 
 
         public void Step()
         {
-            if (CurrentStepIdentity == Identity.White) WhiteClient.MoveStarted(WhiteClient, new MoveEventArgs(Move.Generate()));
-            else BlackClient.MoveStarted(BlackClient, new MoveEventArgs(Move.Generate()));
+            HistoryList.Add($"{DateTime.Now.ToShortTimeString()}: {(HumanIdentity == CurrentStepIdentity ? "Ваш ход" : "Ход врага")}!");
+            CurrentMove = Move.Generate();
+            if (CurrentStepIdentity == Identity.White) 
+                WhiteClient.MoveStarted(WhiteClient, new MoveEventArgs(CurrentMove));
+            else 
+                BlackClient.MoveStarted(BlackClient, new MoveEventArgs(CurrentMove));
+            CurrentStepIdentity = CurrentStepIdentity == Identity.White ? Identity.Black : Identity.White;
+            Step();
         }
-        public Identity CurrentStepIdentity;
         public void NewGame()
         {
             string DrawLotsInfo = string.Empty; 
@@ -55,29 +75,19 @@ namespace NardBotCore
         public Cell this[int FourthNumber, int CellNumber] => Cells.FirstOrDefault(c => c.FourthNumber == FourthNumber && c.CellNumber == CellNumber);
         public List<string> HistoryList;
         public Queue<string> InfoList;
-        public static Random rn;
-        public void AddStep(int SrcFourth, int SrcCellNumber, int cnt)
+        public void ExecuteCommand(Command cmd)
         {
-            Cell c = this[SrcFourth, SrcCellNumber];
-            if (c.ChipCount < 1)
+            var ValidateResult = CurrentMove.Validate(this, cmd);
+            if (!ValidateResult.IsValid)
             {
-                HistoryList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: В ячейке {SrcFourth}-{SrcCellNumber} нет фишек!");
+                InfoList.Enqueue(ValidateResult.BadInfo);
                 return;
             }
-            int ResFourth = c.CellNumber + cnt >= 6 ? c.FourthNumber + 1 : c.FourthNumber;
-            if (ResFourth > 3) ResFourth = 0;
-            int ResCellNumber = ResFourth != c.FourthNumber ? (c.CellNumber + cnt - 6) : (cnt + c.CellNumber);
-            Cell resCell = this[ResFourth, ResCellNumber];
-            if (resCell.Identity != c.Identity && resCell.Identity != Identity.Free)
-            {
-                HistoryList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ячейка {ResFourth}-{ResCellNumber} занята противником!");
-                return;
-            }
-            resCell.ChipCount++;
-            resCell.Identity = c.Identity;
-            c.ChipCount--;
+            ValidateResult.Target.Identity = ValidateResult.Source.Identity;
+            ValidateResult.Target.ChipCount++;
+            ValidateResult.Source.ChipCount--;
 
-            HistoryList.Add($"{SrcFourth}-{SrcCellNumber}-{cnt}: Ok!");
+            HistoryList.Add($"{CurrentStepIdentity}: {cmd}: Ok!");
             return;
         }
         public string GetInfo() => InfoList.Count == 0 ? null : InfoList.Dequeue();

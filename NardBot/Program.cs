@@ -9,8 +9,8 @@ namespace NardBot
         static void Main(string[] args)
         {
             var MyIdent = GetClientIdentity();
-            game = new Game(false);
-            gClient = game.GetClient(MyIdent);
+            game = new Game(false, MyIdent);
+            gClient = game.GetHumanClient();
             gClient.ClientMoveStarted += GClient_ClientMoveStarted;
             dr = Drawer.ByGame(game);
             game.NewGame();
@@ -20,18 +20,19 @@ namespace NardBot
 
         private static void GClient_ClientMoveStarted(object sender, MoveEventArgs e)
         {
+            Move move = e.move;
+
+            while (!move.IsEnd)
+            {
+                dr.Invalidate();
+                Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
+                Console.WriteLine($"Доступные ходы: {string.Join(", ", e.move.Moves)}, Команда: четветь ячейка кол-во очков");
+                Command command = Command.FromString(Console.ReadLine());
+                game.ExecuteCommand(command);
+            }
             dr.Invalidate();
-            Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
-            Console.WriteLine($"Доступные ходы: {string.Join(", ", e.move.Moves)}, Команда: четветь ячейка кол-во очков");
-            ExecuteCommand(Console.ReadLine(), e.move.Moves);
         }
 
-        static void ExecuteCommand(string command, int[] moves)
-        {
-            int[] cmd = command.Split().Select(i => i.Trim()).Select(int.Parse).ToArray();
-            game.AddStep(cmd[0], cmd[1], cmd[2]);
-            dr.Invalidate();
-        }
         static Game game;
         static Drawer dr;
         static GameClient gClient;

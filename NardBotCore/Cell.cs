@@ -19,5 +19,9 @@ namespace NardBotCore
         public int CellNumber { get; set; }
         public Identity Identity { get; set; }
         public int ChipCount { get; set; }
+        public override string ToString()
+        {
+            return $"{FourthNumber}-{CellNumber}";
+        }
     }
 }
