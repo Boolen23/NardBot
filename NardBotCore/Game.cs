@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NardBotCore
 {
-    public class Game 
+    public class Game
     {
         public Game(bool WhiteStarted, Identity HumanIdentity)
         {
@@ -36,24 +36,24 @@ namespace NardBotCore
         public Identity CurrentStepIdentity;
         private Move CurrentMove;
 
-        public GameClient GetHumanClient() => HumanIdentity == Identity.White ?  WhiteClient : BlackClient; 
+        public GameClient GetHumanClient() => HumanIdentity == Identity.White ? WhiteClient : BlackClient;
 
         public void Step()
         {
             HistoryList.Add($"{DateTime.Now.ToShortTimeString()}: {(HumanIdentity == CurrentStepIdentity ? "Ваш ход" : "Ход врага")}!");
             CurrentMove = Move.Generate(CurrentStepIdentity == Identity.White ? WhiteClient : BlackClient);
-            if (CurrentStepIdentity == Identity.White) 
+            if (CurrentStepIdentity == Identity.White)
                 WhiteClient.MoveStarted(WhiteClient, new MoveEventArgs(CurrentMove));
-            else 
+            else
                 BlackClient.MoveStarted(BlackClient, new MoveEventArgs(CurrentMove));
             CurrentStepIdentity = CurrentStepIdentity == Identity.White ? Identity.Black : Identity.White;
             Step();
         }
         public void NewGame()
         {
-            string DrawLotsInfo = string.Empty; 
+            string DrawLotsInfo = string.Empty;
             this.WhiteStarted = Move.DrawLots(out DrawLotsInfo);
-            InfoList.Enqueue(DrawLotsInfo); 
+            InfoList.Enqueue(DrawLotsInfo);
 
             CurrentStepIdentity = WhiteStarted ? Identity.White : Identity.Black;
             for (int FourthCounter = 0; FourthCounter < 4; FourthCounter++)
@@ -68,15 +68,18 @@ namespace NardBotCore
             var BlackCells = this[WhiteStarted ? 2 : 0, 0];
             BlackCells.ChipCount = 15;
             BlackCells.Identity = Identity.Black;
-            BlackClient.StartCell = BlackCells; 
+            BlackClient.StartCell = BlackCells;
 
             Step();
-        } 
+        }
         private bool WhiteStarted;
         public List<Cell> Cells;
         public Cell this[int FourthNumber, int CellNumber] => Cells.FirstOrDefault(c => c.FourthNumber == FourthNumber && c.CellNumber == CellNumber);
         public List<string> HistoryList;
         public Queue<string> InfoList;
+
+        private bool WhiteHasMove = false;
+        private bool BlackHasMove = false;
         public void ExecuteCommand(Command cmd)
         {
             var ValidateResult = CurrentMove.Validate(this, cmd);
@@ -88,6 +91,12 @@ namespace NardBotCore
             ValidateResult.Target.Identity = ValidateResult.Source.Identity;
             ValidateResult.Target.ChipCount++;
             ValidateResult.Source.ChipCount--;
+
+            if (CurrentMove.IsEnd)
+            {
+                if (CurrentStepIdentity == Identity.White && !WhiteHasMove) WhiteHasMove = true;
+                if (CurrentStepIdentity == Identity.Black && !BlackHasMove) BlackHasMove = true;
+            }
 
             HistoryList.Add($"{CurrentStepIdentity}: {cmd}: Ok!");
             return;
