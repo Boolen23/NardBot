@@ -14,6 +14,7 @@ namespace NardBotCore
             this.game = game;   
         }
         protected Game game { get; }
+        public Cell StartCell { get; set; }  
         public virtual void MoveStarted(object sender, MoveEventArgs e) => ClientMoveStarted?.Invoke(this, e);
         
         public event EventHandler<MoveEventArgs> ClientMoveStarted;

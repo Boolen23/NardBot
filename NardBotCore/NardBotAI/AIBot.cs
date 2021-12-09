@@ -17,7 +17,7 @@ namespace NardBotCore.NardBotAI
         {
             while (!e.move.IsEnd)
             {
-                game.ExecuteCommand(new Command() { SourceFourth = 0, SourceCellNumber = 0, MoveCount = e.move.Moves[0] });
+                game.ExecuteCommand(new Command() { SourceFourth = StartCell.FourthNumber, SourceCellNumber = StartCell.CellNumber, MoveCount = e.move.Moves[0] });
             }
             //base.MoveStarted(sender, e);
         }

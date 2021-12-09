@@ -8,7 +8,9 @@ namespace NardBotCore
 {
     public class Move
     {
+        public GameClient GameClient { get; set; } 
         public List<int> Moves;
+        public bool CanTakeFromStartCell { get; set; }
         public bool IsEnd => Moves.Count == 0;
         public (bool IsValid, Cell Source, Cell Target, string BadInfo) Validate(Game game, Command cmd)
         {
@@ -22,7 +24,11 @@ namespace NardBotCore
             if (Source.ChipCount < 1)
                 return (false, Source, null, $"{cmd}: В ячейке {Source} нет фишек!");
 
-            if(game.CurrentStepIdentity != Source.Identity)
+            if(Source == GameClient.StartCell && !CanTakeFromStartCell)
+                return (false, Source, null, $"{cmd}: Вы уже брали из стартовой ячейки!");
+
+
+            if (game.CurrentStepIdentity != Source.Identity)
                 return (false, Source, null, $"{cmd}: Сейчас ход {game.CurrentStepIdentity}, а в запрошенной ячейке {Source.Identity}!");
 
             int ResFourth = Source.CellNumber + cmd.MoveCount >= 6 ? Source.FourthNumber + 1 : Source.FourthNumber;
@@ -34,12 +40,14 @@ namespace NardBotCore
                 return (false, Source, resCell, $"{cmd}: Ячейка {resCell} занята противником!");
 
             Moves.RemoveAt(Moves.IndexOf(cmd.MoveCount));
+            if (Source == GameClient.StartCell)
+                CanTakeFromStartCell = false;
             return (true, Source, resCell, null);
         }
-        public static Move Generate()
+        public static Move Generate(GameClient gameClient)
         {
             if (rn is null) rn = new Random();
-            Move m = new Move();
+            Move m = new Move() { GameClient = gameClient, CanTakeFromStartCell = true };    
 
             int firstNumber = NextNumber;
             int secondNumber = NextNumber;

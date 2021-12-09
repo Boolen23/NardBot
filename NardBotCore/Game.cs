@@ -41,7 +41,7 @@ namespace NardBotCore
         public void Step()
         {
             HistoryList.Add($"{DateTime.Now.ToShortTimeString()}: {(HumanIdentity == CurrentStepIdentity ? "Ваш ход" : "Ход врага")}!");
-            CurrentMove = Move.Generate();
+            CurrentMove = Move.Generate(CurrentStepIdentity == Identity.White ? WhiteClient : BlackClient);
             if (CurrentStepIdentity == Identity.White) 
                 WhiteClient.MoveStarted(WhiteClient, new MoveEventArgs(CurrentMove));
             else 
@@ -63,10 +63,12 @@ namespace NardBotCore
             var Whitecells = this[WhiteStarted ? 0 : 2, 0];
             Whitecells.ChipCount = 15;
             Whitecells.Identity = Identity.White;
+            WhiteClient.StartCell = Whitecells;
 
             var BlackCells = this[WhiteStarted ? 2 : 0, 0];
             BlackCells.ChipCount = 15;
             BlackCells.Identity = Identity.Black;
+            BlackClient.StartCell = BlackCells; 
 
             Step();
         } 
