@@ -75,11 +75,38 @@ namespace NardBotCore
         private bool WhiteStarted;
         public List<Cell> Cells;
         public Cell this[int FourthNumber, int CellNumber] => Cells.FirstOrDefault(c => c.FourthNumber == FourthNumber && c.CellNumber == CellNumber);
+        public Cell this[CellAddress address] => Cells.FirstOrDefault(c => c.FourthNumber == address.FourthNumber && c.CellNumber == address.CellNumber);
         public List<string> HistoryList;
         public Queue<string> InfoList;
 
         private bool WhiteHasMove = false;
         private bool BlackHasMove = false;
+        private bool WhiteHasExtraMove = false;
+        private bool BlackHasExtraMove = false;
+
+        public bool CurrentIdentityHasMove => CurrentStepIdentity == Identity.White ? WhiteHasMove : BlackHasMove;
+        public bool CurrentIdentityHasExtraMove => CurrentStepIdentity == Identity.White ? WhiteHasExtraMove : BlackHasExtraMove;
+
+        public void CurrentIdentityGetExtraMove()
+        {
+            if (CurrentStepIdentity == Identity.White)
+                WhiteHasExtraMove = true; 
+            else BlackHasExtraMove = true;
+        }
+        public bool CurrentIdentityHaveFreeMove
+        {
+            get
+            {
+                foreach (var srcCell in Cells.Where(i => i.Identity == CurrentStepIdentity))
+                    foreach (int move in CurrentMove.Moves)
+                    {
+                        Cell target = this[srcCell + move];
+                        if (target.Identity == CurrentStepIdentity || target.Identity == Identity.Free)
+                            return true;
+                    }
+                return false;
+            }
+        }
         public void ExecuteCommand(Command cmd)
         {
             var ValidateResult = CurrentMove.Validate(this, cmd);

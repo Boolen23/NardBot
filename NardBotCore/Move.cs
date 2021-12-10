@@ -27,21 +27,21 @@ namespace NardBotCore
             if(Source == GameClient.StartCell && !CanTakeFromStartCell)
                 return (false, Source, null, $"{cmd}: Вы уже брали из стартовой ячейки!");
 
-
             if (game.CurrentStepIdentity != Source.Identity)
                 return (false, Source, null, $"{cmd}: Сейчас ход {game.CurrentStepIdentity}, а в запрошенной ячейке {Source.Identity}!");
 
-            int ResFourth = Source.CellNumber + cmd.MoveCount >= 6 ? Source.FourthNumber + 1 : Source.FourthNumber;
-            if (ResFourth > 3) ResFourth = 0;
-            int ResCellNumber = ResFourth != Source.FourthNumber ? (Source.CellNumber + cmd.MoveCount - 6) : (cmd.MoveCount + Source.CellNumber);
-            Cell resCell = game[ResFourth, ResCellNumber];
+            Cell resCell = game[Source + cmd.MoveCount];
+            //TODO: Добавить проверку что это ExtraMove
 
             if (resCell.Identity != Source.Identity && resCell.Identity != Identity.Free)
                 return (false, Source, resCell, $"{cmd}: Ячейка {resCell} занята противником!");
 
             Moves.RemoveAt(Moves.IndexOf(cmd.MoveCount));
-            if (Source == GameClient.StartCell)
+            if (Source == GameClient.StartCell && game.CurrentIdentityHasMove && !game.CurrentIdentityHaveFreeMove && !game.CurrentIdentityHasExtraMove)
+            {
                 CanTakeFromStartCell = false;
+                game.CurrentIdentityGetExtraMove();
+            }
             return (true, Source, resCell, null);
         }
         public static Move Generate(GameClient gameClient)
@@ -56,7 +56,7 @@ namespace NardBotCore
 
             return m;
         }
-        private static int NextNumber => rn.Next(1, 7);
+        private static int NextNumber => rn.Next(5, 7);
 
         private static Random rn;
         public static bool DrawLots(out string info)
